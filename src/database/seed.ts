@@ -18,7 +18,12 @@ async function seed() {
     bookmakerRepo.create([
       { slug: 'betano', name: 'Betano', affiliateUrl: '#', active: true },
       { slug: 'kto', name: 'KTO', affiliateUrl: '#', active: true },
-      { slug: 'betnacional', name: 'Betnacional', affiliateUrl: '#', active: true },
+      {
+        slug: 'betnacional',
+        name: 'Betnacional',
+        affiliateUrl: '#',
+        active: true,
+      },
     ]),
   );
   const bookmakerBySlug = new Map(bookmakers.map((b) => [b.slug, b]));
@@ -81,7 +86,9 @@ async function seed() {
     );
   }
 
-  console.log(`Seed ok: ${bookmakers.length} bookmakers, ${games.length} jogos.`);
+  console.log(
+    `Seed ok: ${bookmakers.length} bookmakers, ${games.length} jogos.`,
+  );
   await dataSource.destroy();
 }
 
