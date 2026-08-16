@@ -11,6 +11,7 @@ import { AlertStatus } from './alert-status.enum';
 import { Odd } from '../odds/odd.entity';
 import { CreateAlertDto } from './dto/create-alert.dto';
 import { UpdateAlertDto } from './dto/update-alert.dto';
+import { PushService } from '../push/push.service';
 
 export type AutoDispatchResult = {
   checked: number;
@@ -26,6 +27,7 @@ export class AlertsService {
     private readonly alertsRepository: Repository<Alert>,
     @InjectRepository(Odd)
     private readonly oddsRepository: Repository<Odd>,
+    private readonly pushService: PushService,
   ) {}
 
   findAll(): Promise<Alert[]> {
@@ -75,10 +77,7 @@ export class AlertsService {
     this.assertActive(alert, 'disparar');
 
     const bestOdd = await this.bestOddFor(alert);
-
-    alert.status = AlertStatus.DISPARADO;
-    alert.triggeredAt = new Date();
-    alert.triggeredBookmakerId = bestOdd?.bookmakerId;
+    await this.markDispatched(alert, bestOdd);
 
     return this.alertsRepository.save(alert);
   }
@@ -88,6 +87,7 @@ export class AlertsService {
   async runAutoDispatch(): Promise<AutoDispatchResult> {
     const activeAlerts = await this.alertsRepository.find({
       where: { status: AlertStatus.ATIVO },
+      relations: { game: true },
     });
 
     let triggered = 0;
@@ -97,9 +97,7 @@ export class AlertsService {
         continue;
       }
 
-      alert.status = AlertStatus.DISPARADO;
-      alert.triggeredAt = new Date();
-      alert.triggeredBookmakerId = bestOdd.bookmakerId;
+      await this.markDispatched(alert, bestOdd);
       await this.alertsRepository.save(alert);
       triggered++;
     }
@@ -112,6 +110,23 @@ export class AlertsService {
     return { checked: activeAlerts.length, triggered };
   }
 
+  private async markDispatched(
+    alert: Alert,
+    bestOdd: Odd | null,
+  ): Promise<void> {
+    alert.status = AlertStatus.DISPARADO;
+    alert.triggeredAt = new Date();
+    alert.triggeredBookmakerId = bestOdd?.bookmakerId;
+
+    if (bestOdd?.bookmaker && alert.game) {
+      await this.pushService.sendToAll({
+        title: 'Odd disparou! 🎯',
+        body: `${alert.game.homeTeam} x ${alert.game.awayTeam}: ${bestOdd.bookmaker.name} chegou a ${bestOdd.value}`,
+        url: `/jogos/${alert.gameId}`,
+      });
+    }
+  }
+
   private bestOddFor(alert: Alert): Promise<Odd | null> {
     return this.oddsRepository.findOne({
       where: {
@@ -119,12 +134,16 @@ export class AlertsService {
         market: alert.market,
         selection: alert.selection,
       },
+      relations: { bookmaker: true },
       order: { value: 'DESC' },
     });
   }
 
   private async findOneOrFail(id: string): Promise<Alert> {
-    const alert = await this.alertsRepository.findOne({ where: { id } });
+    const alert = await this.alertsRepository.findOne({
+      where: { id },
+      relations: { game: true },
+    });
     if (!alert) {
       throw new NotFoundException(`Alerta ${id} não encontrado`);
     }

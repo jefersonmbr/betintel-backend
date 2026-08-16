@@ -9,12 +9,14 @@ import { Game } from './games/game.entity';
 import { Odd } from './odds/odd.entity';
 import { Alert } from './alerts/alert.entity';
 import { AffiliateClick } from './affiliate-clicks/affiliate-click.entity';
+import { PushSubscription } from './push/push-subscription.entity';
 import { BookmakersModule } from './bookmakers/bookmakers.module';
 import { GamesModule } from './games/games.module';
 import { OddsModule } from './odds/odds.module';
 import { AlertsModule } from './alerts/alerts.module';
 import { OddsIngestionModule } from './odds-ingestion/odds-ingestion.module';
 import { AffiliateClicksModule } from './affiliate-clicks/affiliate-clicks.module';
+import { PushModule } from './push/push.module';
 import { sslConfig } from './database/ssl.config';
 
 @Module({
@@ -31,7 +33,14 @@ import { sslConfig } from './database/ssl.config';
         username: config.get<string>('DB_USERNAME'),
         password: config.get<string>('DB_PASSWORD'),
         database: config.get<string>('DB_DATABASE'),
-        entities: [Bookmaker, Game, Odd, Alert, AffiliateClick],
+        entities: [
+          Bookmaker,
+          Game,
+          Odd,
+          Alert,
+          AffiliateClick,
+          PushSubscription,
+        ],
         synchronize: false,
         ssl: sslConfig,
       }),
@@ -42,6 +51,7 @@ import { sslConfig } from './database/ssl.config';
     AlertsModule,
     OddsIngestionModule,
     AffiliateClicksModule,
+    PushModule,
   ],
   controllers: [AppController],
   providers: [AppService],
