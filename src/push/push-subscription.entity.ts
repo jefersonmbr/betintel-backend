@@ -2,15 +2,23 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { User } from '../users/user.entity';
 
-// userId entra na Fase 8; ate la, notificacao vai pra TODAS as
-// subscriptions cadastradas (uso pessoal/demo, sem multi-usuario ainda).
 @Entity('push_subscriptions')
 export class PushSubscription {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'userId' })
+  user: User;
+
+  @Column()
+  userId: string;
 
   @Column({ unique: true })
   endpoint: string;

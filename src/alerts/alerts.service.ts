@@ -30,39 +30,45 @@ export class AlertsService {
     private readonly pushService: PushService,
   ) {}
 
-  findAll(): Promise<Alert[]> {
+  findAllForUser(userId: string): Promise<Alert[]> {
     return this.alertsRepository.find({
+      where: { userId },
       relations: { game: true, triggeredBookmaker: true },
       order: { createdAt: 'DESC' },
     });
   }
 
-  create(dto: CreateAlertDto): Promise<Alert> {
+  create(userId: string, dto: CreateAlertDto): Promise<Alert> {
     const alert = this.alertsRepository.create({
       ...dto,
+      userId,
       status: AlertStatus.ATIVO,
     });
     return this.alertsRepository.save(alert);
   }
 
-  async update(id: string, dto: UpdateAlertDto): Promise<Alert> {
-    const alert = await this.findOneOrFail(id);
+  async update(
+    id: string,
+    userId: string,
+    dto: UpdateAlertDto,
+  ): Promise<Alert> {
+    const alert = await this.findOwnedOrFail(id, userId);
     this.assertActive(alert, 'editar');
 
     alert.targetOdd = dto.targetOdd;
     return this.alertsRepository.save(alert);
   }
 
-  async cancel(id: string): Promise<Alert> {
-    const alert = await this.findOneOrFail(id);
+  async cancel(id: string, userId: string): Promise<Alert> {
+    const alert = await this.findOwnedOrFail(id, userId);
     this.assertActive(alert, 'cancelar');
 
     alert.status = AlertStatus.CANCELADO;
     return this.alertsRepository.save(alert);
   }
 
-  async remove(id: string): Promise<void> {
-    const result = await this.alertsRepository.delete(id);
+  async remove(id: string, userId: string): Promise<void> {
+    const result = await this.alertsRepository.delete({ id, userId });
     if (result.affected === 0) {
       throw new NotFoundException(`Alerta ${id} não encontrado`);
     }
@@ -72,8 +78,8 @@ export class AlertsService {
   // dispara na hora, independente da odd atual ter batido o alvo ou nao.
   // O disparo automatico de verdade e' runAutoDispatch(), rodado pelo
   // AlertsDispatchScheduler.
-  async trigger(id: string): Promise<Alert> {
-    const alert = await this.findOneOrFail(id);
+  async trigger(id: string, userId: string): Promise<Alert> {
+    const alert = await this.findOwnedOrFail(id, userId);
     this.assertActive(alert, 'disparar');
 
     const bestOdd = await this.bestOddFor(alert);
@@ -82,8 +88,8 @@ export class AlertsService {
     return this.alertsRepository.save(alert);
   }
 
-  // Compara cada alerta ativo contra a melhor odd atual do mercado dele;
-  // dispara so quando a odd de verdade bateu o alvo.
+  // Compara cada alerta ativo (de qualquer usuario) contra a melhor odd
+  // atual do mercado dele; dispara so quando a odd de verdade bateu o alvo.
   async runAutoDispatch(): Promise<AutoDispatchResult> {
     const activeAlerts = await this.alertsRepository.find({
       where: { status: AlertStatus.ATIVO },
@@ -119,7 +125,7 @@ export class AlertsService {
     alert.triggeredBookmakerId = bestOdd?.bookmakerId;
 
     if (bestOdd?.bookmaker && alert.game) {
-      await this.pushService.sendToAll({
+      await this.pushService.sendToUser(alert.userId, {
         title: 'Odd disparou! 🎯',
         body: `${alert.game.homeTeam} x ${alert.game.awayTeam}: ${bestOdd.bookmaker.name} chegou a ${bestOdd.value}`,
         url: `/jogos/${alert.gameId}`,
@@ -139,9 +145,9 @@ export class AlertsService {
     });
   }
 
-  private async findOneOrFail(id: string): Promise<Alert> {
+  private async findOwnedOrFail(id: string, userId: string): Promise<Alert> {
     const alert = await this.alertsRepository.findOne({
-      where: { id },
+      where: { id, userId },
       relations: { game: true },
     });
     if (!alert) {

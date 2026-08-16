@@ -39,7 +39,10 @@ export class PushService implements OnModuleInit {
     return process.env.VAPID_PUBLIC_KEY;
   }
 
-  async subscribe(dto: CreatePushSubscriptionDto): Promise<void> {
+  async subscribe(
+    userId: string,
+    dto: CreatePushSubscriptionDto,
+  ): Promise<void> {
     const existing = await this.subscriptionsRepository.findOne({
       where: { endpoint: dto.endpoint },
     });
@@ -49,6 +52,7 @@ export class PushService implements OnModuleInit {
 
     await this.subscriptionsRepository.save(
       this.subscriptionsRepository.create({
+        userId,
         endpoint: dto.endpoint,
         p256dh: dto.keys.p256dh,
         auth: dto.keys.auth,
@@ -56,18 +60,18 @@ export class PushService implements OnModuleInit {
     );
   }
 
-  async unsubscribe(endpoint: string): Promise<void> {
-    await this.subscriptionsRepository.delete({ endpoint });
+  async unsubscribe(userId: string, endpoint: string): Promise<void> {
+    await this.subscriptionsRepository.delete({ userId, endpoint });
   }
 
-  // Manda pra TODAS as subscriptions cadastradas - nao ha usuario ainda
-  // (Fase 8) pra segmentar por dono do alerta.
-  async sendToAll(payload: PushPayload): Promise<void> {
+  async sendToUser(userId: string, payload: PushPayload): Promise<void> {
     if (!process.env.VAPID_PUBLIC_KEY) {
       return;
     }
 
-    const subscriptions = await this.subscriptionsRepository.find();
+    const subscriptions = await this.subscriptionsRepository.find({
+      where: { userId },
+    });
     await Promise.all(
       subscriptions.map((subscription) => this.sendOne(subscription, payload)),
     );

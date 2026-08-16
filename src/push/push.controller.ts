@@ -6,9 +6,13 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { PushService } from './push.service';
 import { CreatePushSubscriptionDto } from './dto/create-push-subscription.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/current-user.decorator';
+import type { CurrentUserPayload } from '../auth/current-user.decorator';
 
 @Controller('push')
 export class PushController {
@@ -19,15 +23,23 @@ export class PushController {
     return { publicKey: this.pushService.getPublicKey() };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('subscribe')
   @HttpCode(HttpStatus.NO_CONTENT)
-  subscribe(@Body() dto: CreatePushSubscriptionDto): Promise<void> {
-    return this.pushService.subscribe(dto);
+  subscribe(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: CreatePushSubscriptionDto,
+  ): Promise<void> {
+    return this.pushService.subscribe(user.id, dto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete('subscribe')
   @HttpCode(HttpStatus.NO_CONTENT)
-  unsubscribe(@Body('endpoint') endpoint: string): Promise<void> {
-    return this.pushService.unsubscribe(endpoint);
+  unsubscribe(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body('endpoint') endpoint: string,
+  ): Promise<void> {
+    return this.pushService.unsubscribe(user.id, endpoint);
   }
 }

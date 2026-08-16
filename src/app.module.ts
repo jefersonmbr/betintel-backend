@@ -10,6 +10,7 @@ import { Odd } from './odds/odd.entity';
 import { Alert } from './alerts/alert.entity';
 import { AffiliateClick } from './affiliate-clicks/affiliate-click.entity';
 import { PushSubscription } from './push/push-subscription.entity';
+import { User } from './users/user.entity';
 import { BookmakersModule } from './bookmakers/bookmakers.module';
 import { GamesModule } from './games/games.module';
 import { OddsModule } from './odds/odds.module';
@@ -17,6 +18,8 @@ import { AlertsModule } from './alerts/alerts.module';
 import { OddsIngestionModule } from './odds-ingestion/odds-ingestion.module';
 import { AffiliateClicksModule } from './affiliate-clicks/affiliate-clicks.module';
 import { PushModule } from './push/push.module';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 import { sslConfig } from './database/ssl.config';
 
 @Module({
@@ -40,6 +43,7 @@ import { sslConfig } from './database/ssl.config';
           Alert,
           AffiliateClick,
           PushSubscription,
+          User,
         ],
         synchronize: false,
         ssl: sslConfig,
@@ -52,6 +56,8 @@ import { sslConfig } from './database/ssl.config';
     OddsIngestionModule,
     AffiliateClicksModule,
     PushModule,
+    UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

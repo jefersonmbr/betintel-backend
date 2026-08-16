@@ -8,15 +8,22 @@ import {
 } from 'typeorm';
 import { Game } from '../games/game.entity';
 import { Bookmaker } from '../bookmakers/bookmaker.entity';
+import { User } from '../users/user.entity';
 import { Market, Selection } from '../odds/market.enum';
 import { AlertStatus } from './alert-status.enum';
 import { decimalTransformer } from '../database/decimal.transformer';
 
-// userId entra na Fase 8 (autenticacao); ate la o alerta e anonimo
 @Entity('alerts')
 export class Alert {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'userId' })
+  user: User;
+
+  @Column()
+  userId: string;
 
   @ManyToOne(() => Game, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'gameId' })
