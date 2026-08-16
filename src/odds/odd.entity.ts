@@ -10,6 +10,7 @@ import {
 import { Game } from '../games/game.entity';
 import { Bookmaker } from '../bookmakers/bookmaker.entity';
 import { Market, Selection } from './market.enum';
+import { decimalTransformer } from '../database/decimal.transformer';
 
 @Entity('odds')
 @Index(['game', 'bookmaker', 'market', 'selection'], { unique: true })
@@ -37,7 +38,12 @@ export class Odd {
   @Column({ type: 'enum', enum: Selection })
   selection: Selection;
 
-  @Column({ type: 'decimal', precision: 6, scale: 2 })
+  @Column({
+    type: 'decimal',
+    precision: 6,
+    scale: 2,
+    transformer: decimalTransformer,
+  })
   value: number;
 
   @UpdateDateColumn({ type: 'timestamptz' })
