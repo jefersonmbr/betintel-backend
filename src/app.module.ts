@@ -8,11 +8,13 @@ import { Bookmaker } from './bookmakers/bookmaker.entity';
 import { Game } from './games/game.entity';
 import { Odd } from './odds/odd.entity';
 import { Alert } from './alerts/alert.entity';
+import { AffiliateClick } from './affiliate-clicks/affiliate-click.entity';
 import { BookmakersModule } from './bookmakers/bookmakers.module';
 import { GamesModule } from './games/games.module';
 import { OddsModule } from './odds/odds.module';
 import { AlertsModule } from './alerts/alerts.module';
 import { OddsIngestionModule } from './odds-ingestion/odds-ingestion.module';
+import { AffiliateClicksModule } from './affiliate-clicks/affiliate-clicks.module';
 
 @Module({
   imports: [
@@ -28,7 +30,7 @@ import { OddsIngestionModule } from './odds-ingestion/odds-ingestion.module';
         username: config.get<string>('DB_USERNAME'),
         password: config.get<string>('DB_PASSWORD'),
         database: config.get<string>('DB_DATABASE'),
-        entities: [Bookmaker, Game, Odd, Alert],
+        entities: [Bookmaker, Game, Odd, Alert, AffiliateClick],
         synchronize: false,
       }),
     }),
@@ -37,6 +39,7 @@ import { OddsIngestionModule } from './odds-ingestion/odds-ingestion.module';
     OddsModule,
     AlertsModule,
     OddsIngestionModule,
+    AffiliateClicksModule,
   ],
   controllers: [AppController],
   providers: [AppService],

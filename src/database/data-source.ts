@@ -4,6 +4,7 @@ import { Bookmaker } from '../bookmakers/bookmaker.entity';
 import { Game } from '../games/game.entity';
 import { Odd } from '../odds/odd.entity';
 import { Alert } from '../alerts/alert.entity';
+import { AffiliateClick } from '../affiliate-clicks/affiliate-click.entity';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -12,7 +13,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  entities: [Bookmaker, Game, Odd, Alert],
+  entities: [Bookmaker, Game, Odd, Alert, AffiliateClick],
   migrations: [__dirname + '/migrations/*.{ts,js}'],
   synchronize: false,
 });

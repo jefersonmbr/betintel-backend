@@ -8,7 +8,8 @@ mocks (`src/mocks/`), para validar o modelo antes de existir backend de verdade.
 
 ### Bookmaker (casa de apostas)
 - `id` — string slug no frontend (ex: `betano`); Postgres provavelmente usa UUID
-- `name`, `logoUrl`, `affiliateUrl` (link de afiliado — placeholder até a Fase 4)
+- `name`, `logoUrl`, `affiliateUrl` (link de afiliado — mecanismo pronto desde a
+  Fase 4, valor ainda é `'#'` até as casas aprovarem o cadastro de afiliado)
 - `active` — permite desativar uma casa sem apagar histórico de odds/cliques
 
 ### Game (partida)
@@ -36,11 +37,15 @@ mocks (`src/mocks/`), para validar o modelo antes de existir backend de verdade.
   qual casa ofereceu a odd que bateu o alvo
 - `userId` entra na Fase 8 (autenticação); até lá o alerta continua anônimo
 
-### AffiliateClick (clique rastreado) — construído na Fase 4
-- `bookmakerId`, `gameId`, `userId?` (nullable, clique pode ser anônimo),
-  `createdAt`. É o log usado pra reconciliar com o relatório de comissão de
-  cada programa de afiliados. Não existe tipo/mock no frontend ainda porque é
-  um evento que só faz sentido gravado no backend.
+### AffiliateClick (clique rastreado)
+- `bookmakerId`, `gameId?` (nullable), `createdAt`. `userId` entra na Fase 8;
+  até lá o clique é anônimo.
+- Gravado por `GET /go/:bookmakerId/:gameId`, a rota que o "Apostar agora"
+  do frontend vai chamar a partir da Fase 5 (redireciona 302 pro
+  `affiliateUrl` do bookmaker depois de registrar o clique). É o log usado
+  pra reconciliar com o relatório de comissão de cada programa de afiliados.
+  Não existe tipo/mock no frontend porque é um evento que só faz sentido
+  gravado no backend.
 
 ### User (usuário) — construído na Fase 8
 - `id`, `email`, `name`, `authProvider`, `plan` (`FREE` | `PREMIUM`)
