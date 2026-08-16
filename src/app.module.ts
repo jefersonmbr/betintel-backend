@@ -15,6 +15,7 @@ import { OddsModule } from './odds/odds.module';
 import { AlertsModule } from './alerts/alerts.module';
 import { OddsIngestionModule } from './odds-ingestion/odds-ingestion.module';
 import { AffiliateClicksModule } from './affiliate-clicks/affiliate-clicks.module';
+import { sslConfig } from './database/ssl.config';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { AffiliateClicksModule } from './affiliate-clicks/affiliate-clicks.modul
         database: config.get<string>('DB_DATABASE'),
         entities: [Bookmaker, Game, Odd, Alert, AffiliateClick],
         synchronize: false,
+        ssl: sslConfig,
       }),
     }),
     BookmakersModule,

@@ -5,6 +5,7 @@ import { Game } from '../games/game.entity';
 import { Odd } from '../odds/odd.entity';
 import { Alert } from '../alerts/alert.entity';
 import { AffiliateClick } from '../affiliate-clicks/affiliate-click.entity';
+import { sslConfig } from './ssl.config';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -16,4 +17,5 @@ export const AppDataSource = new DataSource({
   entities: [Bookmaker, Game, Odd, Alert, AffiliateClick],
   migrations: [__dirname + '/migrations/*.{ts,js}'],
   synchronize: false,
+  ssl: sslConfig,
 });
