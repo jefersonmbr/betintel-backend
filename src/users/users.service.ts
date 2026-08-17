@@ -18,12 +18,22 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { id } });
   }
 
+  findByGoogleId(googleId: string): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { googleId } });
+  }
+
   create(data: {
     email: string;
-    passwordHash: string;
+    passwordHash?: string;
+    googleId?: string;
     name?: string;
   }): Promise<User> {
     const user = this.usersRepository.create(data);
     return this.usersRepository.save(user);
+  }
+
+  async setGoogleId(userId: string, googleId: string): Promise<User> {
+    await this.usersRepository.update(userId, { googleId });
+    return (await this.findById(userId)) as User;
   }
 }
